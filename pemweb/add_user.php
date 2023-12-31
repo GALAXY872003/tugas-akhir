@@ -32,13 +32,29 @@
             $generate_date = $woman_date.date('my', strtotime($birth_date));
         }
 
-        $district_id = $_POST['district'].$generate_date.'0001';
+        $district_id = $_POST['district'] . $generate_date;
+
+        // Check if the record with the generated district and birth date exists
+        $check_query = "SELECT MAX(SUBSTRING(citizen_id, 13)) AS max_suffix FROM `user` WHERE citizen_id LIKE '$district_id%'";
+        $check_result = mysqli_query($conn, $check_query);
+        $row = mysqli_fetch_assoc($check_result);
+        $suffix = $row['max_suffix'];
+    
+        if ($suffix !== null) {
+            // If a record exists, increment the last four digits
+            $suffix = str_pad((int)$suffix + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            // If no record exists, set the last four digits to '0001'
+            $suffix = '0001';
+        }
+    
+        $district_id .= $suffix;
         
 
         if($password != $repassword){
             echo "<script>alert('Password dan Konfirmasi Password tidak sesuai!')</script>";
         }else{
-            $query = "INSERT INTO `user`(`user_fullname`, `user_name`, `user_password`, `citizen_id`, `birth_place`, `birth_date`, `gender`, `blood_type`, `address`, `village_id`, `religion_id`, `marital_id`, `job_title`, `citizen_type`, `issued_date`) VALUES ('$fullname','$username','$md5_password','$citizen_id','$birth_place','$birth_date','$gender','$blood_type','$address','$village_id','$religion_id','$marital_id','$job_title','$citizen_type','$issued_date')";
+            $query = "INSERT INTO `user`(`user_fullname`, `user_name`, `user_password`, `citizen_id`, `birth_place`, `birth_date`, `gender`, `blood_type`, `address`, `village_id`, `religion_id`, `marital_id`, `job_title`, `citizen_type`, `issued_date`) VALUES ('$fullname','$username','$md5_password','$district_id','$birth_place','$birth_date','$gender','$blood_type','$address','$village_id','$religion_id','$marital_id','$job_title','$citizen_type','$issued_date')";
             $result = mysqli_query($conn, $query);
             header("Location: user.php");
             exit();

@@ -25,8 +25,33 @@
         $citizen_type = $_POST['citizen_type'];
         $issued_date = date('Y-m-d');
         
+        if ($gender == 'Laki-Laki') {
+            $generate_date = date('dmy', strtotime($birth_date));
+        } else {
+            $woman_date = date('d', strtotime($birth_date)) + 40;
+            $generate_date = $woman_date . date('my', strtotime($birth_date));
+        }
+    
+        $district_id = $_POST['district'] . $generate_date;
+    
+        // Check if the record with the generated district and birth date exists
+        $check_query = "SELECT MAX(SUBSTRING(citizen_id, 13)) AS max_suffix FROM `user` WHERE citizen_id LIKE '$district_id%'";
+        $check_result = mysqli_query($conn, $check_query);
+        $row = mysqli_fetch_assoc($check_result);
+        $suffix = $row['max_suffix'];
+    
+        if ($suffix !== null) {
+            // If a record exists, increment the last four digits
+            $suffix = str_pad((int)$suffix + 1, 4, '0', STR_PAD_LEFT);
+        } else {
+            // If no record exists, set the last four digits to '0001'
+            $suffix = '0001';
+        }
+    
+        $district_id .= $suffix;
+    
         $query = "UPDATE `user` SET `user_fullname`='$fullname',`user_name`='$username',
-        `birth_place`='$birth_place', `birth_date`='$birth_date',`citizen_id`='$citizen_id',`gender`='$gender',
+        `birth_place`='$birth_place', `birth_date`='$birth_date',`citizen_id`='$district_id',`gender`='$gender',
         `blood_type`='$blood_type',`address`='$address',`village_id`='$village_id',`religion_id`='$religion_id',
         `marital_id`='$marital_id',`job_title`='$job_title',`citizen_type`='$citizen_type',`issued_date`='$issued_date' WHERE `user_id`='$user_id'";
         $result = mysqli_query($conn, $query);
