@@ -28,8 +28,6 @@ if (isset($_GET['id'])) {
 
 if (isset($_POST['update_marital'])) {
     $new_marital_status = mysqli_real_escape_string($conn, $_POST['new_marital_status']);
-
-    // Update marital status in the database
     $update_query = "UPDATE `marital` SET `marital_name` = '$new_marital_status' WHERE `marital_id` = $marital_id";
     $update_result = mysqli_query($conn, $update_query);
 
